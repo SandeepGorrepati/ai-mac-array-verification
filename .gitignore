@@ -1,0 +1,7 @@
+*.vcd
+*.out
+sim.out
+work/
+transcript
+*.log
+__pycache__/
