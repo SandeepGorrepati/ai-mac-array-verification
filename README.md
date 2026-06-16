@@ -50,6 +50,13 @@ output). Confirms the pipeline latency and saturation behavior the self-check ve
 - **Functional coverage:** `covergroup` over saturation-occurred × output-sign, with cross.
 - **PASS/FAIL summary** + saturating-test count + coverage %.
 
+## Coverage closure (measured)
+`tb/tb_mac_cov.sv` tracks the covergroup bins so a real number is produced on Icarus
+(which doesn't score covergroups natively): **100% functional coverage — 11/11 bins**
+(`cp_sat` 2/2, `cp_sign` 3/3, cross 6/6), 66/66 tests passing. The one cross bin random
+stimulus never hits — *saturation occurring while `c[0][0]==0`* — was **closed with a
+directed test** (`sat_with_c00_zero`). Full output: [`proof/COVERAGE_REPORT.txt`](proof/COVERAGE_REPORT.txt).
+
 ## Golden model (`model/mac_ref.py`)
 Python reference that computes `saturate16(A×B)` and self-tests its own arithmetic
 (`python3 model/mac_ref.py`). Validated:

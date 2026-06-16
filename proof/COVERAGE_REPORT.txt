@@ -1,0 +1,17 @@
+# Functional Coverage Report — 4x4 MAC array
+# Measured on Icarus Verilog via in-testbench manual bin tracking
+# (covergroup model: cp_sat[2] x cp_sign[3] + cross[6] = 11 bins)
+# Date: 2026-06-16 12:22 UTC
+
+MAC FUNCTIONAL COVERAGE (manual bin tracking, Icarus)
+  cp_sat   : 2/2 bins
+  cp_sign  : 3/3 bins
+  cross    : 6/6 bins
+  TOTAL    : 11/11 bins = 100.0%
+  tests=66 PASS=66 FAIL=0
+==================================================
+
+Closure note: the cross bin (saturation-occurred AND c[0][0]==0) is not hit by
+random stimulus; it was closed with a directed test (test 'sat_with_c00_zero')
+that saturates c[1][1] while keeping the c[0][0] diagonal at zero. Run:
+  iverilog -g2012 -o cov.out rtl/mac_array_4x4.sv tb/tb_mac_cov.sv && vvp cov.out
