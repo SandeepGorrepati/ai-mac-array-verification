@@ -16,6 +16,9 @@ is the dot product of an A-row and a B-column, accumulated exactly (20-bit) then
 **saturated to signed 16-bit** with a per-element **overflow flag**. 2-stage pipeline.
 
 ## Architecture
+
+![4x4 MAC-array architecture](docs/diagrams/mac_array.png)
+
 ```text
         a_flat (16×int8)            b_flat (16×int8)
               |                          |
