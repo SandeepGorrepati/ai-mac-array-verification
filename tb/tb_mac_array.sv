@@ -31,13 +31,18 @@ module tb_mac_array;
     int passes, fails, sat_seen;
 
     // ---- functional coverage ----
+    // Covergroups need a commercial simulator (Questa/VCS). On Icarus, compile
+    // without the define to run the PASS/FAIL self-check; on Questa/VCS add
+    // +define+USE_COVERGROUP to score functional coverage.
     bit any_sat; int c00_sign;
+`ifdef USE_COVERGROUP
     covergroup cg @(posedge clk iff out_valid);
         cp_sat  : coverpoint any_sat { bins none={0}; bins some={1}; }
         cp_sign : coverpoint c00_sign { bins neg={-1}; bins zero={0}; bins pos={1}; }
         x       : cross cp_sat, cp_sign;
     endgroup
     cg cov = new();
+`endif
 
     // ---- independent reference: C = saturate16(A x B) ----
     task automatic compute_ref();
@@ -113,7 +118,11 @@ module tb_mac_array;
         $display("==================================================");
         $display("MAC-ARRAY VERIFICATION SUMMARY");
         $display("  tests=%0d  PASS=%0d  FAIL=%0d  saturating-tests=%0d", passes+fails, passes, fails, sat_seen);
+`ifdef USE_COVERGROUP
         $display("  Functional coverage = %0.2f%%", cov.get_inst_coverage());
+`else
+        $display("  Functional coverage = (enable +define+USE_COVERGROUP on Questa/VCS)");
+`endif
         $display("  RESULT: %s", (fails==0)?"PASS":"FAIL");
         $display("==================================================");
         $finish;

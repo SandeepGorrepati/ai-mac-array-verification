@@ -1,0 +1,72 @@
+VCD info: dumpfile mac_array.vcd opened for output.
+[PASS] zeros      c[0][0]=0 sat=0/16
+[PASS] AxI        c[0][0]=-8 sat=0/16
+[PASS] max_sat    c[0][0]=32767 sat=16/16
+[PASS] min_sat    c[0][0]=-32768 sat=16/16
+[PASS] small_neg  c[0][0]=-120 sat=0/16
+[PASS] rand0      c[0][0]=-12998 sat=0/16
+[PASS] rand1      c[0][0]=-9698 sat=0/16
+[PASS] rand2      c[0][0]=-648 sat=0/16
+[PASS] rand3      c[0][0]=-19748 sat=0/16
+[PASS] rand4      c[0][0]=-9713 sat=0/16
+[PASS] rand5      c[0][0]=2671 sat=0/16
+[PASS] rand6      c[0][0]=-9295 sat=0/16
+[PASS] rand7      c[0][0]=-7943 sat=0/16
+[PASS] rand8      c[0][0]=2026 sat=0/16
+[PASS] rand9      c[0][0]=12206 sat=0/16
+[PASS] rand10     c[0][0]=-5488 sat=0/16
+[PASS] rand11     c[0][0]=10037 sat=0/16
+[PASS] rand12     c[0][0]=11942 sat=0/16
+[PASS] rand13     c[0][0]=-1612 sat=0/16
+[PASS] rand14     c[0][0]=6398 sat=0/16
+[PASS] rand15     c[0][0]=-10651 sat=0/16
+[PASS] rand16     c[0][0]=-14282 sat=0/16
+[PASS] rand17     c[0][0]=-12853 sat=0/16
+[PASS] rand18     c[0][0]=814 sat=0/16
+[PASS] rand19     c[0][0]=-1428 sat=0/16
+[PASS] rand20     c[0][0]=2604 sat=0/16
+[PASS] rand21     c[0][0]=-9087 sat=0/16
+[PASS] rand22     c[0][0]=32745 sat=0/16
+[PASS] rand23     c[0][0]=365 sat=0/16
+[PASS] rand24     c[0][0]=6272 sat=0/16
+[PASS] rand25     c[0][0]=-4298 sat=0/16
+[PASS] rand26     c[0][0]=-2089 sat=0/16
+[PASS] rand27     c[0][0]=-775 sat=0/16
+[PASS] rand28     c[0][0]=-3406 sat=0/16
+[PASS] rand29     c[0][0]=-6010 sat=0/16
+[PASS] rand30     c[0][0]=-13449 sat=0/16
+[PASS] rand31     c[0][0]=6697 sat=0/16
+[PASS] rand32     c[0][0]=-6191 sat=0/16
+[PASS] rand33     c[0][0]=-15404 sat=0/16
+[PASS] rand34     c[0][0]=582 sat=0/16
+[PASS] rand35     c[0][0]=-11268 sat=0/16
+[PASS] rand36     c[0][0]=5669 sat=0/16
+[PASS] rand37     c[0][0]=298 sat=0/16
+[PASS] rand38     c[0][0]=1669 sat=0/16
+[PASS] rand39     c[0][0]=19768 sat=0/16
+[PASS] rand40     c[0][0]=10909 sat=0/16
+[PASS] rand41     c[0][0]=374 sat=0/16
+[PASS] rand42     c[0][0]=-6132 sat=0/16
+[PASS] rand43     c[0][0]=8404 sat=0/16
+[PASS] rand44     c[0][0]=-4095 sat=0/16
+[PASS] rand45     c[0][0]=-1288 sat=0/16
+[PASS] rand46     c[0][0]=-6980 sat=0/16
+[PASS] rand47     c[0][0]=-2 sat=0/16
+[PASS] rand48     c[0][0]=3653 sat=0/16
+[PASS] rand49     c[0][0]=-8523 sat=0/16
+[PASS] rand50     c[0][0]=-17260 sat=0/16
+[PASS] rand51     c[0][0]=23293 sat=0/16
+[PASS] rand52     c[0][0]=6762 sat=0/16
+[PASS] rand53     c[0][0]=3830 sat=0/16
+[PASS] rand54     c[0][0]=-405 sat=1/16
+[PASS] rand55     c[0][0]=10234 sat=0/16
+[PASS] rand56     c[0][0]=8816 sat=0/16
+[PASS] rand57     c[0][0]=-2405 sat=0/16
+[PASS] rand58     c[0][0]=-27355 sat=0/16
+[PASS] rand59     c[0][0]=1080 sat=0/16
+==================================================
+MAC-ARRAY VERIFICATION SUMMARY
+  tests=65  PASS=65  FAIL=0  saturating-tests=3
+  Functional coverage = (enable +define+USE_COVERGROUP on Questa/VCS)
+  RESULT: PASS
+==================================================

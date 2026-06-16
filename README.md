@@ -1,5 +1,7 @@
 # AI MAC-Array Accelerator — SystemVerilog Verification
 
+![RTL Lint](https://github.com/SandeepGorrepati/ai-mac-array-verification/actions/workflows/lint.yml/badge.svg)
+
 A 4×4 **signed MAC matrix-multiply accelerator** — the compute primitive at the heart of
 AI/ML hardware (TPU systolic arrays, GPU tensor cores) — with a full **self-checking
 SystemVerilog verification environment** and a **Python golden model**.
