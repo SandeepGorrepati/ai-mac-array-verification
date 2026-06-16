@@ -30,6 +30,15 @@ is the dot product of an A-row and a B-column, accumulated exactly (20-bit) then
    [ stage2: register c_flat (16×int16), ovf, out_valid ]
 ```
 
+## Waveform (real simulation output)
+
+![MAC pipeline waveform](docs/waveforms/mac_pipeline.png)
+
+Captured from an actual simulation. It shows `in_valid` launching operands into the
+**2-stage pipeline**, `out_valid` asserting with the `c_flat` result, and the
+per-element **saturation flags** (`ovf` = `FFFF` when the all-max test saturates every
+output). Confirms the pipeline latency and saturation behavior the self-check verifies.
+
 ## Verification environment (`tb/tb_mac_array.sv`)
 - **Independent reference model** (nested-loop matmul + saturation) — not the DUT's logic.
 - **Directed corners:** zeros, A×I (identity), all-max (saturates high), min×max (saturates
