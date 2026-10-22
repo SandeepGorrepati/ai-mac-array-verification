@@ -1,97 +1,46 @@
-# AI MAC-Array Accelerator — SystemVerilog Verification
+# Signed matrix MAC verification
 
-![RTL Lint](https://github.com/SandeepGorrepati/ai-mac-array-verification/actions/workflows/lint.yml/badge.svg)
+![Matrix regression](https://github.com/SandeepGorrepati/ai-mac-array-verification/actions/workflows/regression.yml/badge.svg)
+![RTL lint](https://github.com/SandeepGorrepati/ai-mac-array-verification/actions/workflows/lint.yml/badge.svg)
 
-A 4×4 **signed MAC matrix-multiply accelerator** — the compute primitive at the heart of
-AI/ML hardware (TPU systolic arrays, GPU tensor cores) — with a full **self-checking
-SystemVerilog verification environment** and a **Python golden model**.
+A two-stage signed matrix-multiply datapath with per-element saturation flags. The default configuration multiplies two 4x4 int8 matrices, accumulates in 20 bits, and clips each result to int16. It accepts valid inputs on consecutive cycles; there is no ready/backpressure input.
 
-> Why this project: it speaks the language of AI-silicon teams (Google TPU, NVIDIA GPU) —
-> MAC arrays, signed fixed-point, saturation, and the verification of all of it — while
-> staying small enough to verify cleanly and defend in an interview.
+This is a small parallel matrix compute block, not a systolic array, GPU tensor core, or complete AI accelerator.
 
-## What the DUT does
-`C = saturate16( A × B )` — A, B are 4×4 matrices of **signed 8-bit** elements; each output
-is the dot product of an A-row and a B-column, accumulated exactly (20-bit) then
-**saturated to signed 16-bit** with a per-element **overflow flag**. 2-stage pipeline.
+## Reproduce with free tools
 
-## Architecture
+Python 3 and Icarus Verilog are sufficient:
 
-![4x4 MAC-array architecture](docs/diagrams/mac_array.png)
-
-```text
-        a_flat (16×int8)            b_flat (16×int8)
-              |                          |
-              v                          v
-   [ stage1: latch operands on in_valid ]
-              |
-              v
-   [ 4×4 grid of signed MACs:  c[i][j] = Σ_k a[i][k]·b[k][j] ]
-              |
-   [ saturate to int16 + per-element ovf flag ]
-              |
-   [ stage2: register c_flat (16×int16), ovf, out_valid ]
+```bash
+mkdir -p build
+iverilog -g2012 -s tb_mac_array -o build/directed rtl/mac_array_4x4.sv tb/tb_mac_array.sv
+vvp build/directed
+iverilog -g2012 -s tb_mac_cov -o build/coverage rtl/mac_array_4x4.sv tb/tb_mac_cov.sv
+vvp build/coverage
+python3 scripts/gen_stream.py --n 4 --width 16
+iverilog -g2012 -s tb_stream -o build/stream rtl/mac_array_4x4.sv tb/tb_stream.sv
+vvp build/stream
 ```
 
-## Waveform (real simulation output)
+GitHub Actions also sweeps N=1,2,4 and OUT_W=8,16, with IN_W=8 and ACC_W=20. This verifies six configurations, not all combinations of parameters.
 
-![MAC pipeline waveform](docs/waveforms/mac_pipeline.png)
+## Evidence
 
-Captured from an actual simulation. It shows `in_valid` launching operands into the
-**2-stage pipeline**, `out_valid` asserting with the `c_flat` result, and the
-per-element **saturation flags** (`ovf` = `FFFF` when the all-max test saturates every
-output). Confirms the pipeline latency and saturation behavior the self-check verifies.
+| Layer | Observed result |
+|---|---|
+| Directed + random SV scoreboard | 65 passes, zero failures |
+| Separate manual coverage run | 66 passes, zero failures; 11 defined bins hit |
+| Independent Python-to-RTL stream | 400 cycles/configuration; 337 result matrices checked/configuration |
+| Parameter sweep | Six configurations; 2,022 matrix comparisons in total |
 
-## Verification environment (`tb/tb_mac_array.sv`)
-- **Independent reference model** (nested-loop matmul + saturation) — not the DUT's logic.
-- **Directed corners:** zeros, A×I (identity), all-max (saturates high), min×max (saturates
-  low), small negative.
-- **Constrained-random:** 60 random matrix pairs, self-checked every time.
-- **Functional coverage:** `covergroup` over saturation-occurred × output-sign, with cross.
-- **PASS/FAIL summary** + saturating-test count + coverage %.
+The Python generator computes signed products, clipping, overflow flags, and packing independently. The streaming test checks every output element and flag, expected valid latency, input bubbles, continuous traffic, reset cancellation, and pipeline drain. Directed large positive/negative values exercise saturation.
 
-## Coverage closure (measured)
-`tb/tb_mac_cov.sv` tracks the covergroup bins so a real number is produced on Icarus
-(which doesn't score covergroups natively): **100% functional coverage — 11/11 bins**
-(`cp_sat` 2/2, `cp_sign` 3/3, cross 6/6), 66/66 tests passing. The one cross bin random
-stimulus never hits — *saturation occurring while `c[0][0]==0`* — was **closed with a
-directed test** (`sat_with_c00_zero`). Full output: [`proof/COVERAGE_REPORT.txt`](proof/COVERAGE_REPORT.txt).
+11/11 means the defined saturation/sign bins and cross were hit; it does not mean exhaustive verification, code coverage, or coverage of every output element/value combination. The 65-test and 66-test runs are separate tests, not one combined run.
 
-## Golden model (`model/mac_ref.py`)
-Python reference that computes `saturate16(A×B)` and self-tests its own arithmetic
-(`python3 model/mac_ref.py`). Validated:
-```
-zeros×zeros   -> C[0][0]=0,      sat 0/16
-A_mixed × I   -> C[0][0]=-8,     sat 0/16   (A×I = A)
-max × max     -> C[0][0]=32767,  sat 16/16  (4·127·127=64516 -> saturates)
-min × max     -> C[0][0]=-32768, sat 16/16
-SELF-TEST PASS
-```
+## Fixes and limits
 
-## How to run
-- **EDA Playground** (Questa/VCS — for covergroups): paste `rtl/mac_array_4x4.sv` (design)
-  and `tb/tb_mac_array.sv` (testbench), top = `tb_mac_array`, run.
-- **Icarus** (PASS/FAIL self-check; covergroups won't score):
-  `iverilog -g2012 -o sim.out rtl/mac_array_4x4.sv tb/tb_mac_array.sv && vvp sim.out`
+The original RTL exposed OUT_W as a parameter but hard-coded 16-bit saturation thresholds and clipped constants. Limits now derive from OUT_W. Scoreboard failures and timeouts now terminate with nonzero status.
 
-### Expected tail
-```
-[PASS] zeros      c[0][0]=0 sat=0/16
-[PASS] max_sat    c[0][0]=32767 sat=16/16
-...
-MAC-ARRAY VERIFICATION SUMMARY
-  tests=65  PASS=65  FAIL=0  saturating-tests=..
-  Functional coverage = 100.00%
-  RESULT: PASS
-```
+ACC_W must be large enough for the exact sum of N signed IN_W-bit products. Only the six listed configurations are validated. There is no quantization scale, accumulator reuse, AXI integration, synthesis/timing/area result, or training/inference workload claim. The older `model/mac_ref.py` self-test remains separate; `scripts/gen_stream.py` is the oracle connected to RTL execution.
 
-## What this demonstrates (for AI-silicon DV/RTL interviews)
-- The **MAC/systolic compute primitive** of AI accelerators, in clean RTL.
-- **Signed fixed-point arithmetic + saturation/overflow** handling and its verification.
-- Reference-model **self-checking**, directed + constrained-random stimulus, and
-  **functional coverage** — the full DV methodology applied to an ML-relevant block.
-
-## Roadmap
-- Stream interface (valid/ready) with back-pressure; weight-stationary dataflow.
-- True pipelined **systolic** array with input skewing + latency/throughput counters.
-- Wider/parameterized matrices and INT8→INT32 accumulate modes.
+See [upgrade validation](proof/UPGRADE_VALIDATION.md) and the Actions logs for evidence.
