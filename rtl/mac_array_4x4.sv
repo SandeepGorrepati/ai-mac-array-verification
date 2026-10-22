@@ -28,8 +28,8 @@ module mac_array_4x4 #(
     output logic [N*N*OUT_W-1:0] c_flat,   // row-major, element (i,j) at (i*N+j)
     output logic [N*N-1:0]       ovf       // per-element saturation flag
 );
-    localparam logic signed [ACC_W-1:0] SAT_MAX = 20'sd32767;
-    localparam logic signed [ACC_W-1:0] SAT_MIN = -20'sd32768;
+    localparam logic signed [ACC_W-1:0] SAT_MAX = (64'sd1 << (OUT_W-1)) - 1;
+    localparam logic signed [ACC_W-1:0] SAT_MIN = -(64'sd1 << (OUT_W-1));
 
     // ---- stage 1: latch operands ----
     logic                v1;
@@ -62,8 +62,8 @@ module mac_array_4x4 #(
                 acc = '0;
                 for (int k = 0; k < N; k++)
                     acc += a2[i][k] * b2[k][j];      // signed MAC
-                if (acc > SAT_MAX)      begin c_comb[i][j] = 16'sh7FFF; ov_comb[i*N+j] = 1'b1; end
-                else if (acc < SAT_MIN) begin c_comb[i][j] = -16'sh8000; ov_comb[i*N+j] = 1'b1; end
+                if (acc > SAT_MAX)      begin c_comb[i][j] = SAT_MAX[OUT_W-1:0]; ov_comb[i*N+j] = 1'b1; end
+                else if (acc < SAT_MIN) begin c_comb[i][j] = SAT_MIN[OUT_W-1:0]; ov_comb[i*N+j] = 1'b1; end
                 else                          c_comb[i][j] = acc[OUT_W-1:0];
             end
     end
@@ -82,3 +82,4 @@ module mac_array_4x4 #(
         end
     end
 endmodule
+

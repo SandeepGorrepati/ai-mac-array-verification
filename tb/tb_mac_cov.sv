@@ -60,7 +60,9 @@ module tb_mac_cov;
     $display("  TOTAL    : %0d/11 bins = %0.1f%%", tot, pct);
     $display("  tests=%0d PASS=%0d FAIL=%0d", passes+fails, passes, fails);
     $display("==================================================");
+    if (fails != 0) $fatal(1,"scoreboard failures=%0d",fails);
     $finish;
   end
-  initial begin #300000; $finish; end
+  initial begin #300000; $fatal(1,"TIMEOUT"); end
 endmodule
+

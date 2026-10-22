@@ -1,0 +1,36 @@
+name: Matrix regression
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  simulate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y iverilog
+      - name: Directed and coverage tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build
+          for top in tb_mac_array tb_mac_cov; do
+            iverilog -g2012 -s "$top" -o build/sim rtl/mac_array_4x4.sv "tb/$top.sv"
+            vvp build/sim | tee "$top.log"
+          done
+      - name: Independent Python oracle and parameter sweep
+        shell: bash
+        run: |
+          set -euo pipefail
+          for n in 1 2 4; do
+            for width in 8 16; do
+              python3 scripts/gen_stream.py --n "$n" --width "$width"
+              iverilog -g2012 -s tb_stream -Ptb_stream.N="$n" -Ptb_stream.OUT_W="$width" -o build/stream rtl/mac_array_4x4.sv tb/tb_stream.sv
+              vvp build/stream | tee "stream_${n}_${width}.log"
+            done
+          done
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: matrix-evidence
+          path: '*.log'

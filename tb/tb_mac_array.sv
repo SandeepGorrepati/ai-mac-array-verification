@@ -125,9 +125,12 @@ module tb_mac_array;
 `endif
         $display("  RESULT: %s", (fails==0)?"PASS":"FAIL");
         $display("==================================================");
-        $finish;
+        if (fails != 0) $fatal(1,"scoreboard failures=%0d",fails);
+        if (fails != 0) $fatal(1,"scoreboard failures=%0d",fails);
+    $finish;
     end
 
     initial begin $dumpfile("mac_array.vcd"); $dumpvars(0,tb_mac_array); end
-    initial begin #200000; $display("TIMEOUT"); $finish; end
+    initial begin #200000; $fatal(1,"TIMEOUT"); end
 endmodule
+
